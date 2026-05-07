@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 行動承諾卡 — 我以為我要穩定，但人生逼我改變</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ending: #0D2A4A;
+    --ending-light: #D6E8F8;
+    --ending-mid: #2B6CB0;
+    --neutral: #4A2510;
+    --neutral-light: #F5DFC0;
+    --neutral-mid: #8B4C1A;
+    --new: #073D28;
+    --new-light: #C8EDD8;
+    --new-mid: #1A7A4A;
+    --dark: #0A0806;
+    --warm-white: #F7F4EE;
+    --text: #0E0C0A;
+    --muted: #444040;
+    --border: rgba(0,0,0,0.18);
+    --gold: #C8A050;
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background: var(--warm-white);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: var(--dark);
+    color: #FAF8F4;
+    padding: 28px 24px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(-45deg,transparent,transparent 20px,rgba(255,255,255,0.015) 20px,rgba(255,255,255,0.016) 21px);
+  }
+  .header-eyebrow { font-size: 13px; letter-spacing: 0.2em; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-bottom: 10px; position: relative; }
+  .header h1 { font-family: 'Noto Serif TC', serif; font-size: clamp(26px,6vw,36px); font-weight: 700; line-height: 1.45; position: relative; }
+  .header h1 span { color: var(--gold); }
+  .header-sub { margin-top: 10px; font-size: 15px; color: rgba(255,255,255,0.55); position: relative; }
+
+  /* ── Progress ── */
+  .progress-bar { height: 3px; background: rgba(0,0,0,0.08); }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold), #A0622A); transition: width 0.5s ease; width: 0%; }
+
+  /* ── Container ── */
+  .container { max-width: 520px; margin: 0 auto; padding: 0 16px 80px; }
+
+  /* ── Step dots ── */
+  .step-indicator { display: flex; gap: 8px; padding: 20px 0 6px; justify-content: center; }
+  .step-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(0,0,0,0.12); transition: all 0.3s; }
+  .step-dot.active { background: var(--dark); width: 24px; border-radius: 3px; }
+  .step-dot.done { background: var(--gold); }
+
+  /* ── Screen system ── */
+  .screen { display: none; animation: fadeUp 0.4s ease both; }
+  .screen.active { display: block; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── Section labels ── */
+  .section-number { font-size: 13px; letter-spacing: 0.15em; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; padding-top: 20px; }
+  .section-title { font-family: 'Noto Serif TC', serif; font-size: 24px; font-weight: 600; margin-bottom: 8px; line-height: 1.45; }
+  .section-sub { font-size: 16px; color: var(--muted); line-height: 1.6; margin-bottom: 20px; }
+
+  /* ── Feeling questions ── */
+  .question-block { margin-bottom: 26px; }
+  .question-label { font-size: 18px; font-weight: 500; margin-bottom: 14px; line-height: 1.5; }
+  .q-num { display: inline-block; width: 26px; height: 26px; border-radius: 50%; background: var(--dark); color: white; font-size: 13px; text-align: center; line-height: 26px; margin-right: 8px; flex-shrink: 0; vertical-align: middle; }
+  .options-grid { display: flex; flex-direction: column; gap: 10px; }
+  .option-btn {
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 20px;
+    background: white;
+    cursor: pointer;
+    text-align: left;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 17px;
+    color: var(--text);
+    line-height: 1.55;
+    transition: all 0.18s;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+  }
+  .option-btn:active { transform: scale(0.98); }
+  .option-btn.selected { border-color: var(--dark); background: #EDE9E0; font-weight: 500; }
+  .option-btn.selected::after { content: '✓'; position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 16px; color: var(--dark); }
+
+  /* ── Next button ── */
+  .next-btn {
+    width: 100%; padding: 18px; border-radius: 14px; border: none;
+    background: var(--dark); color: white;
+    font-family: 'Noto Sans TC', sans-serif; font-size: 17px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s; margin-top: 10px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .next-btn:disabled { background: rgba(0,0,0,0.12); color: rgba(0,0,0,0.3); cursor: not-allowed; }
+  .next-btn:not(:disabled):active { transform: scale(0.98); }
+
+  /* ── AI detecting state ── */
+  .detecting-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 20px;
+    text-align: center;
+    margin: 20px 0;
+  }
+  .detecting-icon { font-size: 36px; margin-bottom: 14px; animation: pulse 1.5s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+  .detecting-title { font-family: 'Noto Serif TC', serif; font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+  .detecting-sub { font-size: 16px; color: var(--muted); }
+  .dot-loader { display: inline-flex; gap: 4px; margin-top: 14px; }
+  .dot-loader span { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); animation: dotBounce 1.2s ease-in-out infinite; }
+  .dot-loader span:nth-child(2) { animation-delay: 0.2s; }
+  .dot-loader span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes dotBounce { 0%,80%,100%{transform:scale(0.6);opacity:0.4} 40%{transform:scale(1);opacity:1} }
+
+  /* ── Stage recommendation ── */
+  .recommend-intro { font-size: 16px; color: var(--muted); margin: 20px 0 14px; line-height: 1.7; }
+  .recommend-intro strong { color: var(--text); }
+
+  .recommend-card {
+    border-radius: 16px;
+    overflow: hidden;
+    border: 2px solid transparent;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+  }
+  .recommend-card:active { transform: scale(0.99); }
+  .recommend-card.ending { border-color: var(--ending-mid); }
+  .recommend-card.neutral { border-color: var(--neutral-mid); }
+  .recommend-card.new { border-color: var(--new-mid); }
+  .recommend-card.other { border-color: rgba(0,0,0,0.15); }
+
+  .recommend-card.selected.ending { box-shadow: 0 0 0 3px rgba(74,125,181,0.25); }
+  .recommend-card.selected.neutral { box-shadow: 0 0 0 3px rgba(160,98,42,0.25); }
+  .recommend-card.selected.new { box-shadow: 0 0 0 3px rgba(45,138,94,0.25); }
+  .recommend-card.selected.other { box-shadow: 0 0 0 3px rgba(0,0,0,0.12); }
+
+  .rc-header {
+    padding: 14px 16px 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .rc-header.ending { background: var(--ending-light); }
+  .rc-header.neutral { background: var(--neutral-light); }
+  .rc-header.new { background: var(--new-light); }
+  .rc-header.other { background: #F5F2EC; }
+
+  .rc-icon { font-size: 26px; flex-shrink: 0; margin-top: 2px; }
+  .rc-name { font-size: 18px; font-weight: 500; color: var(--text); }
+  .rc-en { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .rc-check {
+    margin-left: auto;
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 1.5px solid rgba(0,0,0,0.15);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.2s;
+  }
+  .recommend-card.selected .rc-check { background: var(--dark); border-color: var(--dark); }
+  .rc-check svg { opacity: 0; transition: opacity 0.2s; }
+  .recommend-card.selected .rc-check svg { opacity: 1; }
+
+  .rc-body { background: white; padding: 14px 18px 16px; }
+  .rc-desc { font-size: 15px; color: var(--muted); line-height: 1.7; }
+
+  .ai-badge {
+    display: inline-block;
+    background: var(--dark);
+    color: var(--gold);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  /* ── Textarea ── */
+  .hint-box { background: #EDE9DF; border-radius: 12px; padding: 14px 16px; font-size: 15px; color: var(--muted); line-height: 1.7; margin-bottom: 14px; }
+  .hint-box strong { color: var(--text); font-weight: 500; }
+
+  textarea {
+    width: 100%;
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 17px;
+    color: var(--text);
+    resize: none;
+    min-height: 120px;
+    line-height: 1.75;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+  textarea:focus { outline: none; border-color: rgba(0,0,0,0.4); }
+  textarea::placeholder { color: #B0A898; }
+  .char-count { text-align: right; font-size: 13px; color: var(--muted); margin-top: 6px; }
+
+  /* ── Generate button ── */
+  .gen-btn {
+    width: 100%; padding: 18px; border-radius: 14px; border: none;
+    background: var(--dark); color: white;
+    font-family: 'Noto Sans TC', sans-serif; font-size: 17px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .gen-btn:disabled { background: rgba(0,0,0,0.12); color: rgba(0,0,0,0.3); cursor: not-allowed; }
+  .gen-btn:not(:disabled):active { transform: scale(0.98); }
+
+  /* ── Loading ── */
+  .loading-state { text-align: center; padding: 44px 20px; }
+  .loading-spinner { width: 42px; height: 42px; border: 2.5px solid rgba(0,0,0,0.08); border-top-color: var(--dark); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 16px; color: var(--muted); }
+
+  /* ── Result ── */
+  .result-card { background: white; border-radius: 18px; overflow: hidden; border: 1.5px solid var(--border); animation: fadeUp 0.5s ease both; margin-bottom: 12px; }
+  .result-header { padding: 18px 22px; display: flex; align-items: center; gap: 10px; }
+  .result-header.ending { background: var(--ending-light); }
+  .result-header.neutral { background: var(--neutral-light); }
+  .result-header.new { background: var(--new-light); }
+  .result-badge { font-size: 14px; font-weight: 500; padding: 6px 14px; border-radius: 20px; }
+  .ending .result-badge { background: white; color: var(--ending); }
+  .neutral .result-badge { background: white; color: var(--neutral); }
+  .new .result-badge { background: white; color: var(--new); }
+  .result-body { padding: 22px; }
+  .result-text { font-size: 17px; line-height: 2; color: var(--text); }
+
+  .action-box { margin-top: 20px; padding: 18px 20px; border-radius: 12px; border-left: 4px solid; }
+  .ending .action-box { background: var(--ending-light); border-color: var(--ending); }
+  .neutral .action-box { background: var(--neutral-light); border-color: var(--neutral); }
+  .new .action-box { background: var(--new-light); border-color: var(--new); }
+  .action-label { font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .action-text { font-family: 'Noto Serif TC', serif; font-size: 19px; font-weight: 600; line-height: 1.55; color: var(--text); }
+
+  .action-row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+  .secondary-btn {
+    flex: 1; padding: 14px; border-radius: 12px; border: 1.5px solid var(--border);
+    background: white; font-family: 'Noto Sans TC', sans-serif; font-size: 15px;
+    color: var(--text); cursor: pointer; transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent; min-width: 100px;
+  }
+  .secondary-btn:active { transform: scale(0.97); background: #E8E4DA; }
+
+  .divider { height: 1px; background: var(--border); margin: 6px 0 18px; }
+  .footer { text-align: center; padding: 16px; font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>我以為我要穩定<br><span>但人生逼我改變</span></h1>
+  <div class="header-sub">AI 行動承諾 · 主講 賴俊燐</div>
+</div>
+
+<div class="progress-bar">
+  <div class="progress-fill" id="progressFill"></div>
+</div>
+
+<div class="container">
+
+  <div class="step-indicator">
+    <div class="step-dot active" id="dot1"></div>
+    <div class="step-dot" id="dot2"></div>
+    <div class="step-dot" id="dot3"></div>
+    <div class="step-dot" id="dot4"></div>
+  </div>
+
+  <!-- ══ Screen 1：感受問題 ══ -->
+  <div class="screen active" id="screen1">
+    <div class="section-number">步驟 01 ／ 感受確認</div>
+    <div class="section-title">先回答兩個問題</div>
+    <div class="section-sub">不用想太多，選最接近你現在感覺的就好。</div>
+
+    <div class="question-block">
+      <div class="question-label">
+        <span class="q-num">1</span>
+        最近，你對「現在的自己」的感覺是？
+      </div>
+      <div class="options-grid" id="q1-options">
+        <button class="option-btn" data-q="1" data-v="a" onclick="selectOption(this)">感覺有什麼東西正在結束，但還不確定</button>
+        <button class="option-btn" data-q="1" data-v="b" onclick="selectOption(this)">不知道自己在哪、要往哪走</button>
+        <button class="option-btn" data-q="1" data-v="c" onclick="selectOption(this)">開始感覺到新的方向，雖然還不完全清楚</button>
+        <button class="option-btn" data-q="1" data-v="d" onclick="selectOption(this)">還沒感受到什麼特別的改變</button>
+      </div>
+    </div>
+
+    <div class="question-block">
+      <div class="question-label">
+        <span class="q-num">2</span>
+        面對「未來」，你現在最常出現的感受是？
+      </div>
+      <div class="options-grid" id="q2-options">
+        <button class="option-btn" data-q="2" data-v="a" onclick="selectOption(this)">捨不得，或有點抗拒放手</button>
+        <button class="option-btn" data-q="2" data-v="b" onclick="selectOption(this)">茫然，不知道自己在等什麼</button>
+        <button class="option-btn" data-q="2" data-v="c" onclick="selectOption(this)">有一點期待，雖然還是會緊張</button>
+        <button class="option-btn" data-q="2" data-v="d" onclick="selectOption(this)">平靜，還沒特別想那麼遠</button>
+      </div>
+    </div>
+
+    <button class="next-btn" id="nextBtn1" onclick="goToDetecting()" disabled>
+      讓 AI 幫我判斷 →
+    </button>
+  </div>
+
+  <!-- ══ Screen 2：AI 判斷中 ══ -->
+  <div class="screen" id="screen2">
+    <div class="detecting-card" style="margin-top: 24px;">
+      <div class="detecting-icon">🤖</div>
+      <div class="detecting-title">AI 正在分析你的感受</div>
+      <div class="detecting-sub">根據你的回答，推算你現在的轉換階段…</div>
+      <div class="dot-loader">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Screen 3：階段確認 ══ -->
+  <div class="screen" id="screen3">
+    <div class="section-number">步驟 02 ／ 階段確認</div>
+    <div class="section-title">AI 推測你的階段</div>
+
+    <div class="recommend-intro" id="recommendIntro"></div>
+
+    <div id="stageCards"></div>
+
+    <button class="next-btn" id="nextBtn3" onclick="goToInput()" disabled style="margin-top: 8px;">
+      確認，繼續填寫 →
+    </button>
+  </div>
+
+  <!-- ══ Screen 4：狀況描述 + 生成 ══ -->
+  <div class="screen" id="screen4">
+    <div class="section-number">步驟 03 ／ 選填</div>
+    <div class="section-title">想說說你的狀況嗎？</div>
+
+    <div class="hint-box">
+      <strong>這是選填的。</strong>可以跳過直接產生，也可以補充 2-3 句——說了，AI 給的建議會更貼近你。
+    </div>
+
+    <textarea
+      id="situationInput"
+      placeholder="例如：我快大四了，同學都在找正職，但我其實不確定自己想要什麼…（可不填）"
+      maxlength="200"
+      oninput="onInputChange()"
+    ></textarea>
+    <div class="char-count"><span id="charCount">0</span> / 200 字</div>
+
+    <div style="margin-top: 14px;">
+      <button class="gen-btn" id="genBtn" onclick="generateCard()">
+        <span>✦</span> 產生我的行動承諾卡
+      </button>
+    </div>
+
+    <div id="resultArea" style="margin-top: 24px; display: none;"></div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Powered by Claude AI
+</div>
+
+<script>
+  const answers = { 1: null, 2: null };
+  let selectedStage = null;
+  let aiRecommendedStage = null;
+
+  const stageData = {
+    ending: {
+      name: '結束階段',
+      en: 'Endings',
+      icon: '🔚',
+      class: 'ending',
+      desc: '你感覺到某個身份或方向正在動搖，舊的自己慢慢離開，雖然還沒完全放下。',
+      full: '結束階段（Endings）：正在認知並告別舊的身份或方式，感受到失落與放下'
+    },
+    neutral: {
+      name: '中立地帶',
+      en: 'Neutral Zone',
+      icon: '🌫️',
+      class: 'neutral',
+      desc: '你離開了舊的，但還沒到達新的。迷茫、不確定，但這個空白本身充滿可能。',
+      full: '中立地帶（Neutral Zone）：已離開舊的，但還未到達新的，處於混亂不確定的過渡期'
+    },
+    new: {
+      name: '新的開始',
+      en: 'New Beginnings',
+      icon: '🌅',
+      class: 'new',
+      desc: '你帶著不一樣的自己，開始感受到新方向的吸引，雖然還在摸索，但能量正在回來。',
+      full: '新的開始（New Beginnings）：正在接受新的認同與方向，帶著不一樣的自己前進'
+    }
+  };
+
+  // 根據答案推算階段
+  function detectStage(q1, q2) {
+    const score = { ending: 0, neutral: 0, new: 0 };
+    if (q1 === 'a') score.ending += 2;
+    if (q1 === 'b') score.neutral += 2;
+    if (q1 === 'c') score.new += 2;
+    if (q1 === 'd') { score.ending += 0.5; score.neutral += 1; score.new += 0.5; }
+    if (q2 === 'a') score.ending += 2;
+    if (q2 === 'b') score.neutral += 2;
+    if (q2 === 'c') score.new += 2;
+    if (q2 === 'd') { score.ending += 0.3; score.neutral += 0.7; score.new += 0.3; }
+    return Object.entries(score).sort((a,b) => b[1]-a[1])[0][0];
+  }
+
+  // 生成階段推薦說明文字
+  function getRecommendIntro(stage, q1, q2) {
+    const texts = {
+      ending: '根據你的回答，你感受到的「捨不得」和「某件事正在結束」，是很典型的<strong>結束階段</strong>的訊號。這不是壞事——它代表你已經意識到改變在發生了。',
+      neutral: '根據你的回答，你描述的「漂浮感」和「茫然」，其實是<strong>中立地帶</strong>最真實的狀態。這個階段最難受，但也是改變真正在醞釀的地方。',
+      new: '根據你的回答，你已經開始感覺到新方向的吸引，雖然還有點緊張——這正是<strong>新的開始</strong>的樣子。你比你以為的更往前了。'
+    };
+    return texts[stage] + '<br><br>你覺得 AI 判斷得準嗎？可以直接確認，或換一個更符合的階段。';
+  }
+
+  function selectOption(btn) {
+    const q = btn.dataset.q;
+    document.querySelectorAll(`[data-q="${q}"]`).forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    answers[parseInt(q)] = btn.dataset.v;
+    updateProgress1();
+    document.getElementById('nextBtn1').disabled = !(answers[1] && answers[2]);
+  }
+
+  function updateProgress1() {
+    const filled = (answers[1] ? 1 : 0) + (answers[2] ? 1 : 0);
+    document.getElementById('progressFill').style.width = (filled / 2 * 25) + '%';
+    document.getElementById('dot1').className = 'step-dot ' + (filled === 2 ? 'done' : 'active');
+    document.getElementById('dot2').className = 'step-dot ' + (filled === 2 ? 'active' : '');
+  }
+
+  function goToDetecting() {
+    showScreen('screen2');
+    setDots(1);
+    document.getElementById('progressFill').style.width = '35%';
+
+    setTimeout(() => {
+      aiRecommendedStage = detectStage(answers[1], answers[2]);
+      buildStageCards(aiRecommendedStage);
+      showScreen('screen3');
+      setDots(2);
+      document.getElementById('progressFill').style.width = '55%';
+    }, 1800);
+  }
+
+  function buildStageCards(recommended) {
+    document.getElementById('recommendIntro').innerHTML = getRecommendIntro(recommended, answers[1], answers[2]);
+
+    const order = [recommended, ...Object.keys(stageData).filter(s => s !== recommended)];
+    let html = '';
+    order.forEach((stage, i) => {
+      const d = stageData[stage];
+      const isAI = stage === recommended;
+      html += `
+        <div class="recommend-card ${d.class} ${isAI ? 'selected' : ''}" id="rc-${stage}" onclick="selectStageCard('${stage}')">
+          <div class="rc-header ${d.class}">
+            <div class="rc-icon">${d.icon}</div>
+            <div style="flex:1;">
+              ${isAI ? '<div class="ai-badge">✦ AI 推薦</div>' : ''}
+              <div class="rc-name">${d.name}</div>
+              <div class="rc-en">${d.en}</div>
+            </div>
+            <div class="rc-check">
+              <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                <path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+          <div class="rc-body">
+            <div class="rc-desc">${d.desc}</div>
+          </div>
+        </div>`;
+    });
+    document.getElementById('stageCards').innerHTML = html;
+    selectedStage = recommended;
+    document.getElementById('nextBtn3').disabled = false;
+  }
+
+  function selectStageCard(stage) {
+    document.querySelectorAll('.recommend-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('rc-' + stage).classList.add('selected');
+    selectedStage = stage;
+    document.getElementById('nextBtn3').disabled = false;
+  }
+
+  function goToInput() {
+    showScreen('screen4');
+    setDots(3);
+    document.getElementById('progressFill').style.width = '70%';
+  }
+
+  function onInputChange() {
+    const val = document.getElementById('situationInput').value;
+    document.getElementById('charCount').textContent = val.length;
+  }
+
+  async function generateCard() {
+    const situation = document.getElementById('situationInput').value.trim();
+    const btn = document.getElementById('genBtn');
+    const resultArea = document.getElementById('resultArea');
+    const stage = stageData[selectedStage];
+
+    btn.disabled = true;
+    btn.innerHTML = '<span>⏳</span> 產生中…';
+
+    resultArea.style.display = 'block';
+    resultArea.innerHTML = `<div class="loading-state">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">AI 正在為你生成專屬承諾卡…</div>
+    </div>`;
+    resultArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    const situationLine = situation
+      ? `【學生描述】：${situation}`
+      : `【學生描述】：（學生未填寫，請根據階段特性給出貼切的回應）`;
+
+    const prompt = `你是一位溫暖、有洞察力的生涯轉換 AI 顧問，熟悉 William Bridges 的轉換模型。
+
+一位大學生正面對人生的改變：
+
+【目前階段】：${stage.full}
+${situationLine}
+
+請用繁體中文，以溫暖有力量的語氣寫一段個人化回應（約120-150字），包含：
+1. 一句話呼應這個階段最常見的感受，讓人感到被理解（避免套話，要像真的聽進去了）
+2. 說明這個階段的意義或可能性，給人力量而不是壓力
+3. 一個今天就能做的具體小行動（15字以內，要夠具體可執行）
+
+最後一行單獨輸出：
+【今日行動】：（15字以內的具體行動）
+
+語氣：像懂你的學長姐，不說教，有溫度，說到心裡。不要有開場白或結語。`;
+
+    try {
+      const res = await fetch('https://wispy-sun-c5ba.ai-1123junlin.workers.dev', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`HTTP ${res.status}: ${errText}`);
+      }
+
+      const data = await res.json();
+      if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+
+      const raw = data.content?.[0]?.text || '';
+      if (!raw) throw new Error('API 回傳內容為空\n\n原始回傳：' + JSON.stringify(data).substring(0, 300));
+
+      const actionMatch = raw.match(/【今日行動】[：:]\s*(.+)/);
+      const actionText = actionMatch ? actionMatch[1].trim() : '';
+      const mainText = raw.replace(/【今日行動】[：:].*/s, '').trim();
+
+      document.getElementById('progressFill').style.width = '100%';
+      setDots(4);
+
+      window._cardData = { mainText, actionText, stage, selectedStage };
+
+      resultArea.innerHTML = `
+        <div class="result-card">
+          <div class="result-header ${selectedStage}">
+            <span class="result-badge ${selectedStage}">我現在在「${stage.name} ${stage.en}」</span>
+          </div>
+          <div class="result-body ${selectedStage}">
+            <div class="result-text">${escHtml(mainText)}</div>
+            ${actionText ? `
+            <div class="action-box ${selectedStage}">
+              <div class="action-label">今日行動承諾</div>
+              <div class="action-text">${escHtml(actionText)}</div>
+            </div>` : ''}
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="secondary-btn" id="downloadBtn" onclick="downloadCard()">🖼️ 下載圖卡</button>
+          <button class="secondary-btn" onclick="resetAll()">🔄 重新開始</button>
+        </div>
+        <canvas id="cardCanvas" style="display:none;"></canvas>`;
+      resultArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    } catch(e) {
+      resultArea.innerHTML = `<div style="padding:20px; background:#FFF8F0; border-radius:12px; border:1px solid #E0C090;">
+        <div style="font-size:15px; font-weight:500; color:#8B4C1A; margin-bottom:10px;">⚠️ 產生失敗</div>
+        <div style="font-size:13px; color:#666; margin-bottom:14px; word-break:break-all;">${escHtml(e.message || '未知錯誤')}</div>
+        <button class="secondary-btn" onclick="generateCard()" style="width:auto;padding:10px 20px;">重試</button>
+      </div>`;
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<span>✦</span> 重新產生';
+  }
+
+  function escHtml(t) {
+    return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.arcTo(x + w, y, x + w, y + r, r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+    ctx.lineTo(x + r, y + h);
+    ctx.arcTo(x, y + h, x, y + h - r, r);
+    ctx.lineTo(x, y + r);
+    ctx.arcTo(x, y, x + r, y, r);
+    ctx.closePath();
+  }
+
+  function downloadCard() {
+    const btn = document.getElementById('downloadBtn');
+    btn.textContent = '產生中…';
+    btn.disabled = true;
+
+    try {
+      const { mainText, actionText, stage, selectedStage } = window._cardData;
+
+      const stageColors = {
+        ending:  { bg: '#D6E8F8', header: '#0D2A4A', accent: '#2B6CB0', light: '#EAF2FB' },
+        neutral: { bg: '#F5DFC0', header: '#4A2510', accent: '#8B4C1A', light: '#FAF0E0' },
+        new:     { bg: '#C8EDD8', header: '#073D28', accent: '#1A7A4A', light: '#E0F5E8' }
+      };
+      const c = stageColors[selectedStage];
+      const W = 900, PAD = 56, bodyW = W - PAD * 2;
+      const canvas = document.getElementById('cardCanvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = W;
+      canvas.height = 100;
+
+      function setFont(size, weight, serif) {
+        ctx.font = `${weight} ${size}px ${serif ? 'serif' : 'sans-serif'}`;
+      }
+
+      function wrapText(text, maxW) {
+        const lines = [];
+        let line = '';
+        for (const ch of text) {
+          const test = line + ch;
+          if (ctx.measureText(test).width > maxW && line.length > 0) {
+            lines.push(line); line = ch;
+          } else { line = test; }
+        }
+        if (line) lines.push(line);
+        return lines;
+      }
+
+      const LINE_H = 36;
+
+      // measure
+      setFont(20, '400', false);
+      const mainLines = wrapText(mainText, bodyW - 20);
+      const mainH = mainLines.length * LINE_H;
+
+      let aLines = [];
+      let actionBoxH = 0;
+      if (actionText) {
+        setFont(22, '600', true);
+        aLines = wrapText(actionText, bodyW - 48);
+        actionBoxH = 28 + 36 + aLines.length * LINE_H + 24;
+      }
+
+      const HEADER_H = 80;
+      const totalH = HEADER_H + 48 + mainH + (actionText ? 32 + actionBoxH : 0) + 64;
+      canvas.height = totalH;
+
+      // bg
+      ctx.fillStyle = '#F7F4EE';
+      ctx.fillRect(0, 0, W, totalH);
+
+      // header
+      ctx.fillStyle = c.bg;
+      ctx.fillRect(0, 0, W, HEADER_H);
+
+      // badge
+      setFont(15, '500', false);
+      const badgeText = `我現在在「${stage.name} ${stage.en}」`;
+      const badgeW = ctx.measureText(badgeText).width + 32;
+      ctx.fillStyle = 'white';
+      roundRect(ctx, PAD, 22, badgeW, 36, 18);
+      ctx.fill();
+      ctx.fillStyle = c.header;
+      ctx.textBaseline = 'middle';
+      ctx.fillText(badgeText, PAD + 16, 22 + 18);
+
+      // accent bar
+      const textStartY = HEADER_H + 44;
+      ctx.fillStyle = c.accent;
+      ctx.fillRect(PAD, textStartY - 4, 4, mainH + 8);
+
+      // main text
+      setFont(20, '400', false);
+      ctx.fillStyle = '#0E0C0A';
+      ctx.textBaseline = 'top';
+      mainLines.forEach((line, i) => {
+        ctx.fillText(line, PAD + 16, textStartY + i * LINE_H);
+      });
+
+      // action box
+      if (actionText) {
+        const boxY = textStartY + mainH + 32;
+        ctx.fillStyle = c.light;
+        roundRect(ctx, PAD, boxY, bodyW, actionBoxH, 14);
+        ctx.fill();
+        ctx.fillStyle = c.accent;
+        ctx.fillRect(PAD, boxY, 4, actionBoxH);
+
+        setFont(12, '500', false);
+        ctx.fillStyle = '#555';
+        ctx.textBaseline = 'top';
+        ctx.fillText('今日行動承諾', PAD + 20, boxY + 16);
+
+        setFont(22, '600', true);
+        ctx.fillStyle = '#0E0C0A';
+        aLines.forEach((line, i) => {
+          ctx.fillText(line, PAD + 20, boxY + 44 + i * LINE_H);
+        });
+      }
+
+      // footer
+      setFont(13, '400', false);
+      ctx.fillStyle = '#999';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText('Powered by Claude AI · 主講 賴俊燐', PAD, totalH - 20);
+
+      // download via blob
+      canvas.toBlob(function(blob) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = '我的行動承諾卡.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        btn.textContent = '✓ 已下載！';
+        setTimeout(() => { btn.textContent = '🖼️ 下載圖卡'; btn.disabled = false; }, 2000);
+      }, 'image/png');
+
+    } catch(e) {
+      console.error(e);
+      btn.textContent = '下載失敗，請重試';
+      btn.disabled = false;
+    }
+  }
+
+  function resetAll() {
+    answers[1] = null; answers[2] = null;
+    selectedStage = null; aiRecommendedStage = null;
+    document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('situationInput').value = '';
+    document.getElementById('charCount').textContent = '0';
+    document.getElementById('resultArea').style.display = 'none';
+    document.getElementById('genBtn').innerHTML = '<span>✦</span> 產生我的行動承諾卡';
+    document.getElementById('nextBtn1').disabled = true;
+    document.getElementById('progressFill').style.width = '0%';
+    showScreen('screen1');
+    setDots(0);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function setDots(activeIndex) {
+    const dots = ['dot1','dot2','dot3','dot4'];
+    dots.forEach((d, i) => {
+      if (i < activeIndex) document.getElementById(d).className = 'step-dot done';
+      else if (i === activeIndex) document.getElementById(d).className = 'step-dot active';
+      else document.getElementById(d).className = 'step-dot';
+    });
+  }
+</script>
+</body>
+</html>
